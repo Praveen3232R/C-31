@@ -9,111 +9,65 @@ const Composite = Matter.Composite;
 
 let engine;
 let world;
-var rope,fruit,ground;
-var fruit_con;
+var ground, bridge;
+var leftWall, rightWall;
+var jointPoint;
+var jointLink;
 
-var bg_img;
-var food;
-var rabbit;
-
-var button;
-var bunny;
-
-var blink;
-
-var sad;
-
-var eat;
-function preload()
-{
-  bg_img = loadImage('background.png');
-  food = loadImage('melon.png');
-  rabbit = loadImage('Rabbit-01.png');;
-
-  blink = loadAnimation('blink_1.png','blink_2.png','blink_3.png');
-  sad = loadAnimation('sad_1.png','sad_2.png','sad_3.png');
-  eat = loadAnimation('eat_0.png','eat_1.png','eat_2.png','eat_3.png','eat_4.png');
- 
-  blink.playing=true;
-  eat.playing=true;
-  eat.looping=false;
-  sad.playing=true;
-  sad.looping=false;
-  sad.frameDelay=20;
-}
+var stones = [];
 
 function setup() {
-  createCanvas(500,700);
-  frameRate(80);
-
+  createCanvas(windowWidth, windowHeight);
   engine = Engine.create();
   world = engine.world;
+  frameRate(80);
+
+  ground = new Base(0, height - 10, width * 2, 20, "#795548", true);
+  leftWall = new Base(100, height / 2 + 50, 600, 100, "#8d6e63", true);
+  rightWall = new Base(width - 300, height / 2 + 50, 600, 100, "#8d6e63", true);
+
+  /*bridge = new Base(15, { x: width / 2 - 400, y: height / 2 });
+  jointPoint = new Base(width - 600, height / 2 + 10, 40, 20, "#8d6e63", true);*/
+
+  bridge = new Bridge(15, { x: width / 2 - 400, y: height / 2 });
+  jointPoint = new Base(width - 600, height / 2 + 10, 40, 20, "#8d6e63", true);
+
+  /*bridge = new Base(15, { x: width / 2 - 400, y: height / 2 });
+  jointPoint = new Bridge(width - 600, height / 2 + 10, 40, 20, "#8d6e63", true);*/
+
+  /*bridge = new Bridge(15, { x: width / 2 - 400, y: height / 2 });
+  jointPoint = new Bridge(width - 600, height / 2 + 10, 40, 20, "#8d6e63", true);*/
+
   
-  button = createImg('cut_btn.png');
-  button.position(220,30);
-  button.size(50,50);
-  button.mouseClicked(drop);
+  Matter.Composite.add(bridge.body, jointPoint);
+
+  //Matter.Composite.add(jointPoint);
   
-  rope = new Rope(7,{x:245,y:30});
-  ground = new Ground(200,690,600,20);
-  blink.frameDelay=20;
-  eat.frameDelay=20;
-
-  bunny = createSprite(230,620,100,100);
-  bunny.addAnimation("blinking",blink)
-  bunny.addAnimation("eating",eat)
-  bunny.changeAnimation("blinking")
-  bunny.addAnimation("crying,",sad)
-  bunny.scale = 0.2;
-
-  fruit = Bodies.circle(300,300,20);
-  Matter.Composite.add(rope.body,fruit);
-
-  fruit_con = new Link(rope,fruit);
-
-  rectMode(CENTER);
-  ellipseMode(RADIUS);
-  imageMode(CENTER);
+  //Matter.Composite.add(jointPoint, bridge.body);
   
+  //Matter.Composite.add(bridge.body);
+
+
+  jointLink = new Link(bridge, jointPoint);
+
+  for (var i = 0; i <= 8; i++) {
+    var x = random(width / 2 - 200, width / 2 + 300);
+    var y = random(-10, 140);
+    var stone = new Stone(x, y, 80, 80);
+    stones.push(stone);
+  }
 }
 
-function draw() 
-{
+function draw() {
   background(51);
-  image(bg_img,width/2,height/2,490,690);
-  
-  
-
-  rope.show();
-  if (fruit!=null){
-    image(food,fruit.position.x,fruit.position.y,70,70);
-  }
   Engine.update(engine);
+
   ground.show();
-if (collide(fruit,bunny)==true){
-  bunny.changeAnimation("eating")
-}
-  if (collide(ground,bunny)==true){
-    bunny.changeAnimation("crying")
-  }
-   drawSprites();
-}
+  bridge.show();
+  leftWall.show();
+  rightWall.show();
 
-function drop()
-{
-  rope.break();
-  fruit_con.dettach();
-  fruit_con = null; 
-}
-
-function collide(body,sprite){
-  if(body != null){
-    var d = dist(sprite.x,sprite.y,body.position.x,body.position.y)
-    if (d<=80){
-      World.remove(engine.world,fruit)
-      fruit=null;
-      return true
-    }
-    else{return false}
+  for (var stone of stones) {
+    stone.show();
   }
 }
